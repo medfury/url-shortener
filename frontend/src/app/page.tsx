@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 import {
   Link2,
   Zap,
@@ -19,8 +20,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ModeToggle } from "@/components/mode-toggle";
 import { cn } from "@/lib/utils";
+
+const ModeToggle = dynamic(
+  () => import("@/components/mode-toggle").then((mod) => mod.ModeToggle),
+  { ssr: false },
+);
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface Link {
@@ -35,7 +40,7 @@ interface HealthInfo {
   status: string;
   region: string;
   environment: string;
-  uptime: number;
+  uptime: number | string;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -49,7 +54,8 @@ function nanoid(n = 6) {
   ).join("");
 }
 
-function fmtUptime(s: number) {
+function fmtUptime(s: number | null) {
+  if (s === null) return "unknown";
   if (s < 60) return `${s}s`;
   if (s < 3600) return `${Math.floor(s / 60)}m`;
   return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
@@ -72,7 +78,7 @@ function Toast({ toast }: { toast: ToastState }) {
     >
       <span
         className={cn(
-          "h-2 w-2 rounded-full flex-shrink-0",
+          "h-2 w-2 rounded-full shrink-0",
           toast.type === "ok" ? "bg-emerald-400" : "bg-red-400",
         )}
       />
@@ -155,7 +161,7 @@ function LinkRow({
 }
 
 // ── Main page ──────────────────────────────────────────────────────────────
-export default function RailLink() {
+export default function Home() {
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -163,7 +169,7 @@ export default function RailLink() {
 
   const [links, setLinks] = useState<Link[]>([]);
   const [health, setHealth] = useState<HealthInfo | null>(null);
-  const [uptime, setUptime] = useState(0);
+  const [uptime, setUptime] = useState<number | null>(null);
 
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -194,6 +200,8 @@ export default function RailLink() {
       setUptime(data.uptime);
     } catch {
       /* offline */
+      setHealth(null);
+      setUptime(null);
     }
   }, []);
 
@@ -205,7 +213,9 @@ export default function RailLink() {
     void initialLoad();
   }, [loadLinks, loadHealth]);
   useEffect(() => {
-    const t = setInterval(() => setUptime((u) => u + 1), 1000);
+    const t = setInterval(() => {
+      setUptime((u) => (typeof u === "number" ? u + 1 : u));
+    }, 1000);
     return () => clearInterval(t);
   }, []);
   useEffect(() => {
