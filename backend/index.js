@@ -44,8 +44,8 @@ app.get("/health", (req, res) => {
   res.json({
     status: "ok",
     service: "url-shortener-api",
-    region: process.env.RAILWAY_REGION || "local",
-    environment: process.env.RAILWAY_ENVIRONMENT || "development",
+    region: process.env.RAILWAY_REPLICA_REGION || "local",
+    environment: process.env.RAILWAY_ENVIRONMENT_NAME || "development",
     uptime: Math.round(process.uptime()),
   });
 });
@@ -155,7 +155,7 @@ initDb()
       console.log(`🚀 API running on port ${PORT}`);
       console.log(`   Region:      ${process.env.RAILWAY_REGION || "local"}`);
       console.log(
-        `   Environment: ${process.env.RAILWAY_ENVIRONMENT || "development"}`,
+        `   Environment: ${process.env.RAILWAY_ENVIRONMENT_NAME || "development"}`,
       );
     });
   })
