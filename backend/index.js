@@ -43,7 +43,7 @@ app.use(express.json());
 app.get("/health", (req, res) => {
   res.json({
     status: "ok",
-    service: "railway-demo-api",
+    service: "url-shortener-api",
     region: process.env.RAILWAY_REGION || "local",
     environment: process.env.RAILWAY_ENVIRONMENT || "development",
     uptime: Math.round(process.uptime()),
@@ -78,7 +78,7 @@ app.post("/api/links", async (req, res) => {
     }
 
     const link = result.rows[0];
-    const shortUrl = `${process.env.API_BASE_URL || `http://localhost:${PORT}`}/r/${link.slug}`;
+    const shortUrl = `${process.env.RAILWAY_PUBLIC_DOMAIN || `http://localhost:${PORT}`}/r/${link.slug}`;
     res.status(201).json({ ...link, shortUrl });
   } catch (err) {
     console.error(err);
