@@ -1,0 +1,40 @@
+# Node (any folder)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Backend
+/backend/node_modules/
+/backend/.env
+/backend/.env.local
+/backend/.env.*.local
+/backend/dist/
+/backend/build/
+
+# Frontend (add framework-specific folders if used)
+#/frontend/node_modules/     # uncomment if you install deps in frontend
+/frontend/dist/
+/frontend/build/
+/frontend/.next/
+/frontend/.nuxt/
+/frontend/.vite/
+
+# Lockfiles and deployment config - keep these committed (do NOT ignore)
+# pnpm-lock.yaml
+# railway.toml
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs / coverage
+*.log
+logs/
+coverage/
+
+# Packages / archives
+*.tgz
+.cache/

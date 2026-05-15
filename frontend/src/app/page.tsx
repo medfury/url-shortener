@@ -17,8 +17,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ModeToggle } from "@/components/mode-toggle";
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -197,8 +198,11 @@ export default function RailLink() {
   }, []);
 
   useEffect(() => {
-    loadLinks();
-    loadHealth();
+    const initialLoad = async () => {
+      await Promise.all([loadLinks(), loadHealth()]);
+    };
+
+    void initialLoad();
   }, [loadLinks, loadHealth]);
   useEffect(() => {
     const t = setInterval(() => setUptime((u) => u + 1), 1000);
@@ -285,7 +289,7 @@ export default function RailLink() {
   const totalClicks = links.reduce((a, l) => a + l.clicks, 0);
 
   return (
-    <div className="min-h-screen bg-[#0F0D1A] text-[#F4F4FF] font-sans">
+    <div className="min-h-screen font-sans">
       {/* ── Ambient glow ── */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-violet-700/20 blur-3xl" />
@@ -301,13 +305,16 @@ export default function RailLink() {
             </div>
             <span className="text-sm font-bold tracking-tight">RailLink</span>
           </div>
-          <Badge variant="default" className="gap-1.5">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            </span>
-            Deployed on Railway
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="default" className="gap-1.5">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              </span>
+              Deployed on Railway
+            </Badge>
+            <ModeToggle />
+          </div>
         </nav>
 
         {/* ── Hero ── */}
@@ -315,16 +322,16 @@ export default function RailLink() {
           <h1 className="mb-2 text-4xl font-extrabold tracking-tight leading-tight">
             Shorten URLs.
             <br />
-            <span className="text-violet-400">Powered by Railway.</span>
+            <span className="text-violet-600">Powered by Railway.</span>
           </h1>
-          <p className="text-sm text-[#9CA3AF]">
+          <p className="text-sm">
             Full-stack demo · Express API + PostgreSQL + Next.js · one Railway
             project
           </p>
         </div>
 
         {/* ── Create card ── */}
-        <Card className="mb-4">
+        <Card className="mb-4 border border-violet-600/30">
           <CardContent className="pt-5 space-y-3">
             {/* URL row */}
             <div className="flex gap-2">
@@ -406,14 +413,14 @@ export default function RailLink() {
               color: "text-sky-400",
             },
           ].map(({ label, value, icon: Icon, color }) => (
-            <Card key={label}>
+            <Card key={label} className="border border-violet-600/30">
               <CardContent className="flex items-center gap-3 py-4 px-4">
                 <Icon className={cn("h-4 w-4 shrink-0", color)} />
                 <div>
                   <p className={cn("text-base font-bold leading-none", color)}>
                     {value}
                   </p>
-                  <p className="mt-1 text-[10px] text-[#9CA3AF]">{label}</p>
+                  <p className="mt-1 text-[10px]">{label}</p>
                 </div>
               </CardContent>
             </Card>
