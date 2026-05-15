@@ -1,5 +1,6 @@
 "use client";
 
+import axios from "axios";
 import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import {
@@ -21,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const ModeToggle = dynamic(
   () => import("@/components/mode-toggle").then((mod) => mod.ModeToggle),
@@ -55,36 +57,10 @@ function nanoid(n = 6) {
 }
 
 function fmtUptime(s: number | null) {
-  if (s === null) return "unknown";
+  if (s === null) return "Server offline";
   if (s < 60) return `${s}s`;
   if (s < 3600) return `${Math.floor(s / 60)}m`;
   return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
-}
-
-// ── Toast ──────────────────────────────────────────────────────────────────
-type ToastState = { msg: string; type: "ok" | "err" } | null;
-
-function Toast({ toast }: { toast: ToastState }) {
-  if (!toast) return null;
-  return (
-    <div
-      className={cn(
-        "fixed bottom-5 right-5 z-50 flex items-center gap-2.5 rounded-xl border px-4 py-3 text-sm shadow-xl transition-all",
-        "bg-[#1C1830]",
-        toast.type === "ok"
-          ? "border-emerald-500/30 text-emerald-400"
-          : "border-red-500/30 text-red-400",
-      )}
-    >
-      <span
-        className={cn(
-          "h-2 w-2 rounded-full shrink-0",
-          toast.type === "ok" ? "bg-emerald-400" : "bg-red-400",
-        )}
-      />
-      {toast.msg}
-    </div>
-  );
 }
 
 // ── Link row ───────────────────────────────────────────────────────────────
@@ -162,7 +138,9 @@ function LinkRow({
 
 // ── Main page ──────────────────────────────────────────────────────────────
 export default function Home() {
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(
+    "https://docs.railway.com/overview/about-railway",
+  );
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [loading, setLoading] = useState(false);
@@ -173,18 +151,20 @@ export default function Home() {
 
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [toast, setToast] = useState<ToastState>(null);
+  const { toast } = useToast();
 
   function showToast(msg: string, type: "ok" | "err" = "ok") {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 2800);
+    toast({
+      title: type === "ok" ? "Success" : "Error",
+      description: msg,
+      variant: type === "err" ? "destructive" : "default",
+    });
   }
 
   // ── Fetch links ──────────────────────────────────────────────────────────
   const loadLinks = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/links`);
-      const data = await res.json();
+      const { data } = await axios.get(`${API}/api/links`);
       setLinks(Array.isArray(data) ? data : []);
     } catch {
       // API offline — demo mode
@@ -194,8 +174,7 @@ export default function Home() {
   // ── Health ───────────────────────────────────────────────────────────────
   const loadHealth = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/health`);
-      const data = await res.json();
+      const { data } = await axios.get(`${API}/health`);
       setHealth(data);
       setUptime(data.uptime);
     } catch {
@@ -238,14 +217,14 @@ export default function Home() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/links`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, title, customSlug: slug || undefined }),
+      const { data } = await axios.post(`${API}/api/links`, {
+        url,
+        title,
+        customSlug: slug || undefined,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        showToast(data.error ?? "Something went wrong", "err");
+      console.log("Create response", data);
+      if (!data?.shortUrl) {
+        showToast("Something went wrong", "err");
         return;
       }
       setResultUrl(data.shortUrl);
@@ -254,22 +233,13 @@ export default function Home() {
       setSlug("");
       showToast("Link created!");
       loadLinks();
-    } catch {
-      // demo fallback
-      const s = slug.trim() || nanoid();
-      const newLink: Link = {
-        slug: s,
-        url,
-        title: title || null,
-        clicks: 0,
-        created_pretty: "Today",
-      };
-      setLinks((prev) => [newLink, ...prev]);
-      setResultUrl(`${API}/r/${s}`);
-      setUrl("");
-      setTitle("");
-      setSlug("");
-      showToast("Link created! (demo mode — no API)");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        showToast(
+          error.response?.data?.message || "Failed to create link",
+          "err",
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -277,7 +247,7 @@ export default function Home() {
 
   async function deleteLink(slug: string) {
     try {
-      await fetch(`${API}/api/links/${slug}`, { method: "DELETE" });
+      await axios.delete(`${API}/api/links/${slug}`);
     } catch {
       /* offline */
     }
@@ -497,8 +467,6 @@ export default function Home() {
           </>
         )}
       </div>
-
-      <Toast toast={toast} />
     </div>
   );
 }

@@ -153,7 +153,9 @@ initDb()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`🚀 API running on port ${PORT}`);
-      console.log(`   Region:      ${process.env.RAILWAY_REPLICA_REGION || "local"}`);
+      console.log(
+        `   Region:      ${process.env.RAILWAY_REPLICA_REGION || "local"}`,
+      );
       console.log(
         `   Environment: ${process.env.RAILWAY_ENVIRONMENT_NAME || "development"}`,
       );
