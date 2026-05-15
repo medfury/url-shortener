@@ -1,8 +1,9 @@
-const express = require("express");
-const cors = require("cors");
-const { Pool } = require("pg");
-import { nanoid } from 'nanoid';
-require("dotenv").config();
+import express from "express";
+import cors from "cors";
+import pkg from "pg";
+const { Pool } = pkg;
+import { nanoid } from "nanoid";
+import "dotenv/config";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -10,7 +11,10 @@ const PORT = process.env.PORT || 3001;
 // ─── Database ───────────────────────────────────────────────────────────────
 // Railway injects DATABASE_URL automatically when you add a Postgres service
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString:
+    process.env.NODE_ENV === "production"
+      ? process.env.DATABASE_URL
+      : "postgresql://postgres:postgres@localhost:5432/shorturl",
   ssl:
     process.env.NODE_ENV === "production"
       ? { rejectUnauthorized: false }
