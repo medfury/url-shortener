@@ -114,7 +114,7 @@ function LinkRow({
         variant="outline"
         size="icon"
         onClick={copy}
-        className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="h-8 w-8 group-hover:opacity-100 transition-opacity"
       >
         {copied ? (
           <Check className="h-3.5 w-3.5 text-emerald-400" />
@@ -128,7 +128,7 @@ function LinkRow({
         variant="ghost"
         size="icon"
         onClick={() => onDelete(link.slug)}
-        className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-[#4B4570] hover:text-red-400 hover:bg-red-500/10"
+        className="h-8 w-8 group-hover:opacity-100 transition-opacity text-[#4B4570] hover:text-red-400 hover:bg-red-500/10"
       >
         <Trash2 className="h-3.5 w-3.5" />
       </Button>
