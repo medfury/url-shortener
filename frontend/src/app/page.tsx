@@ -46,7 +46,7 @@ interface HealthInfo {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3001";
 
 function nanoid(n = 6) {
   const c = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -138,9 +138,7 @@ function LinkRow({
 
 // ── Main page ──────────────────────────────────────────────────────────────
 export default function Home() {
-  const [url, setUrl] = useState(
-    "https://docs.railway.com/overview/about-railway",
-  );
+  const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [loading, setLoading] = useState(false);
@@ -164,7 +162,7 @@ export default function Home() {
   // ── Fetch links ──────────────────────────────────────────────────────────
   const loadLinks = useCallback(async () => {
     try {
-      const { data } = await axios.get(`${API}/api/links`);
+      const { data } = await axios.get(`https://${API}/api/links`);
       setLinks(Array.isArray(data) ? data : []);
     } catch {
       // API offline — demo mode
@@ -174,7 +172,7 @@ export default function Home() {
   // ── Health ───────────────────────────────────────────────────────────────
   const loadHealth = useCallback(async () => {
     try {
-      const { data } = await axios.get(`${API}/health`);
+      const { data } = await axios.get(`https://${API}/health`);
       setHealth(data);
       setUptime(data.uptime);
     } catch {
@@ -217,7 +215,7 @@ export default function Home() {
 
     setLoading(true);
     try {
-      const { data } = await axios.post(`${API}/api/links`, {
+      const { data } = await axios.post(`https://${API}/api/links`, {
         url,
         title,
         customSlug: slug || undefined,
@@ -247,7 +245,7 @@ export default function Home() {
 
   async function deleteLink(slug: string) {
     try {
-      await axios.delete(`${API}/api/links/${slug}`);
+      await axios.delete(`https://${API}/api/links/${slug}`);
     } catch {
       /* offline */
     }
