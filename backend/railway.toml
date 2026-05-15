@@ -1,0 +1,12 @@
+# railway.toml — tells Railway how to build & run this service
+# Committed to your repo; Railway reads it automatically
+
+[build]
+builder = "nixpacks"  # auto-detects Node.js — no Dockerfile needed
+
+[deploy]
+startCommand = "node index.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 10
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
